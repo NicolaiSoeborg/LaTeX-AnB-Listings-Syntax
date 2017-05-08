@@ -1,0 +1,76 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\lstdefinelanguage{AnB}{
+  keywords=[1]{Agent, Number, Function, Symmetric_key, PublicKey},
+  keywords=[2]{Protocol, Types, Knowledge, Goals, Actions},
+  keywords=[3]{section, inits, rules, step, initial_state, attack_state, not, where, authenticates, on, secret, between},
+  keywordstyle=[1]\color{violet},
+  keywordstyle=[2]\color{magenta},
+  keywordstyle=[3]\bf,
+  sensitive=false, % keywords are not case-sensitive
+  morecomment=[l]{\#}, % line comment
+  morecomment=[l]{\%}, % line comment
+  %morecomment=[s]{/*}{*/}, % start and end delimiter
+  basicstyle=\footnotesize,
+  literate=%
+    {->}{\begingroup{\color{blue}$\rightarrow$}\endgroup}2%
+    {\{}{\begingroup{\color{blue}\{}\endgroup}1%
+    {\}}{\begingroup{\color{blue}\}}\endgroup}1%
+    % Catch {|  |}  s.t. we can add them to a math env. = less space between chars
+    {\{|}{\begingroup{\color{red}$\{\vert$}\endgroup}2%
+    {|\}}{\begingroup{\color{red}$\vert\}$}\endgroup}2%
+    {*}{$\bullet$}1,
+}
+\lstset{
+    language=AnB,
+    captionpos=b, % bottom
+    frame=single, % frame aroundcode
+    numbers=left
+}
+
+\title{AnB Syntax}
+\author{Nicolai Søborg}
+\date{May 08, 2017} %\today
+
+
+\begin{document}
+
+\section*{Introduction}
+This is a test of the syntax highlighting for the language AnB.
+
+\begin{lstlisting}
+Protocol: Basic_Kerberos  # Bounded-verified
+
+Types:
+     Agent  C,a,g,s;
+    Number  N1,N2,T1,T2,T3,Payload,tag;
+  Function  hash,sk;
+Symmetric_key  KCG,KCS
+
+Knowledge:
+  C:  C, a, g, s, sk(C, a), hash, tag;
+  a:  a, g, hash, C, sk(C, a), sk(a, g), tag;
+  g:  a, g, sk(a, g), sk(g, s), hash, tag;
+  s:  g, s, sk(g, s), hash, tag
+
+Actions:
+  C -> a: C,g,N1
+  a -> C: {| KCG, C, T1 |}sk(a,g),
+          {| KCG, N1, T1, G |}sk(C,a)
+  C -> g: {| KCG, C, T1 |}sk(a,g),
+          {|C,T1|}KCG,
+          s,N2
+  g -> C: {| KCS, C, T2 |}sk(g,s),
+          {| KCS, N2, T2, s |}KCG
+  C -> s: {| KCS, C, T2 |}sk(g,s),
+          {| C, T3 |}KCS
+  s -> C: {|T3|}KCS, {|tag,Payload|}KCS
+
+Goals:
+  s *->* C: Payload
+\end{lstlisting}
+
+\end{document}
